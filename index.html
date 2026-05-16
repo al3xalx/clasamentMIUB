@@ -24,37 +24,67 @@
         <h2>🏆 Adaugă Scorul</h2>
         <input type="text" id="alias" placeholder="Aliasul tău (ex: Bogdiii)">
         <input type="number" id="score" min="0" placeholder="Punctaj obținut">
-        <input type="number" id="clasa" placeholder="Clasa">
+        <label>Alege clasa:</label>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0;">
+            <label style="flex: 1; display: flex; align-items: center; gap: 6px;"><input type="radio" name="clasa" value="11">11</label>
+            <label style="flex: 1; display: flex; align-items: center; gap: 6px;"><input type="radio" name="clasa" value="12">12</label>
+            <label style="flex: 1; display: flex; align-items: center; gap: 6px;"><input type="radio" name="clasa" value="Șomer">Șomer</label>
+        </div>
         <label>Alege concursul:</label>
         <select id="concurs">
             <option value="MIUB - Matematică">Matematică</option>
             <option value="MIUB - Informatică">Informatică</option>
+            <option value="MIUB - Baze de date">Baze de date</option>
         </select>
         <button id="btnTrimite">Trimite Scorul</button>
     </div>
 
-    <div style="width: 100%; max-width: 600px;">
+    <div style="width: 100%; max-width: 800px;">
         <h2>📊 Clasament Live</h2>
-        <label>Filtrează după concurs:</label>
-        <select id="filtruConcurs">
-            <option value="Toate">Toate</option>
-            <option value="MIUB - Matematică">Matematică</option>
-            <option value="MIUB - Informatică">Informatică</option>
-        </select>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Loc</th>
-                    <th>Alias</th>
-                    <th>Scor</th>
-                    <th>Concurs</th>
-                </tr>
-            </thead>
-            <tbody id="tabelScoruri">
-                <!-- Datele vor apărea aici -->
-            </tbody>
-        </table>
+        <div style="display: grid; gap: 25px;">
+            <div>
+                <h3>Matematică</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Loc</th>
+                            <th>Alias</th>
+                            <th>Scor</th>
+                            <th>Clasa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelMatematica"></tbody>
+                </table>
+            </div>
+            <div>
+                <h3>Informatică</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Loc</th>
+                            <th>Alias</th>
+                            <th>Scor</th>
+                            <th>Clasa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelInformatica"></tbody>
+                </table>
+            </div>
+            <div>
+                <h3>Baze de date</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Loc</th>
+                            <th>Alias</th>
+                            <th>Scor</th>
+                            <th>Clasa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelBaze"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase SDK -->
@@ -98,7 +128,7 @@
             const alias = document.getElementById('alias').value;
             const score = parseInt(scoreInput.value);
             const concurs = concursSelect.value;
-            const maxScore = concurs === "MIUB - Informatică" ? 58 : 100;
+            const maxScore = concurs === "MIUB - Informatică" ? 58 : 58;
 
             if (!alias || isNaN(score)) {
                 alert("Te rugăm să completezi aliasul și scorul!");
