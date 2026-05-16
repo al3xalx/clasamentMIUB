@@ -22,8 +22,9 @@
 
     <div class="card">
         <h2>🏆 Adaugă Scorul</h2>
-        <input type="text" id="alias" placeholder="Aliasul tău (ex: Player1)">
-        <input type="number" id="score" placeholder="Punctaj obținut">
+        <input type="text" id="alias" placeholder="Aliasul tău (ex: Bogdiii)">
+        <input type="number" id="score" min="0" placeholder="Punctaj obținut">
+        <input type="number" id="clasa" placeholder="Clasa">
         <label>Alege concursul:</label>
         <select id="concurs">
             <option value="MIUB - Matematică">Matematică</option>
@@ -76,26 +77,48 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const colRef = collection(db, "scoruri");
+        const scoreInput = document.getElementById('score');
+        const concursSelect = document.getElementById('concurs');
+
+        function updateScoreMax() {
+            if (concursSelect.value === "MIUB - Informatică") {
+                scoreInput.max = 58;
+                scoreInput.placeholder = "Punctaj obținut (max 58)";
+            } else {
+                scoreInput.removeAttribute('max');
+                scoreInput.placeholder = "Punctaj obținut";
+            }
+        }
+
+        concursSelect.onchange = updateScoreMax;
+        updateScoreMax();
 
         // Funcția de trimitere date
         document.getElementById('btnTrimite').onclick = async () => {
             const alias = document.getElementById('alias').value;
-            const score = parseInt(document.getElementById('score').value);
-            const concurs = document.getElementById('concurs').value;
+            const score = parseInt(scoreInput.value);
+            const concurs = concursSelect.value;
+            const maxScore = concurs === "MIUB - Informatică" ? 58 : 100;
 
-            if(alias && !isNaN(score)) {
-                await addDoc(colRef, {
-                    alias: alias,
-                    score: score,
-                    concurs: concurs,
-                    data: new Date()
-                });
-                document.getElementById('alias').value = '';
-                document.getElementById('score').value = '';
-                alert("Scor înregistrat!");
-            } else {
+            if (!alias || isNaN(score)) {
                 alert("Te rugăm să completezi aliasul și scorul!");
+                return;
             }
+
+            if (score < 0 || score > maxScore) {
+                alert(`Punctajul pentru ${concurs} trebuie să fie între 0 și ${maxScore}.`);
+                return;
+            }
+
+            await addDoc(colRef, {
+                alias: alias,
+                score: score,
+                concurs: concurs,
+                data: new Date()
+            });
+            document.getElementById('alias').value = '';
+            scoreInput.value = '';
+            alert("Scor înregistrat!");
         };
 
         // Funcția de afișare clasament (Live)
