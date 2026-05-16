@@ -128,6 +128,18 @@
             return selected ? selected.value : null;
         }
 
+        function containsBadWords(value) {
+            const badWords = [
+                "pula", "muie", "pizda", "pizdă", "pizdar", "pizdulica", "cacat", "rahat", "kkt", "cur", "curva", "curvă", "curvari", "curvar",
+                "futut", "fute", "fut", "futai", "fută", "futea", "futut", "suge", "suge pula", "suge pula", "dizvirginat", "sex", "porn", "porno", "xxx",
+                "bitch", "fuck", "fucker", "motherfucker", "shit", "ass", "arse", "cunt", "dick", "penis", "vagin", "vagina", "proasta", "idiota",
+                "idiot", "retard", "tanga", "curve", "mutra", "bou", "boule", "id**t", "injoraturi", "injuraturi", "injurături", "cacatului", "rahatului",
+                "tâmpit", "prost", "prostanac", "curvai", "curvăsă", "fututului"
+            ];
+            const normalized = value.toLowerCase();
+            return badWords.some(word => new RegExp(`\\b${word}\\b`, "i").test(normalized));
+        }
+
         // Funcția de trimitere date
         document.getElementById('btnTrimite').onclick = async () => {
             const alias = document.getElementById('alias').value.trim();
@@ -141,9 +153,18 @@
                 return;
             }
 
+            if (containsBadWords(alias)) {
+                alert("Aliasul conține cuvinte nepermise. Alege alt alias.");
+                return;
+            }
+
             if (score < 0 || score > maxScore) {
                 alert(`Punctajul pentru ${concurs} trebuie să fie între 0 și ${maxScore}.`);
                 return;
+            }
+
+            if (concurs === "MIUB - Informatică" && score > 52) {
+                alert("ce amuzant esti");
             }
 
             await addDoc(colRef, {
