@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasament Concurs</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; margin-bottom: 20px; }
+        h2 { margin-top: 0; color: #1a73e8; }
+        input, select, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        button { background-color: #1a73e8; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { background-color: #1557b0; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #1a73e8; color: white; }
+        tr:hover { background-color: #f8f9fa; }
+        .gold { background-color: #ffd700 !important; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>🏆 Adaugă Scorul</h2>
+        <input type="text" id="alias" placeholder="Aliasul tău (ex: Player1)">
+        <input type="number" id="score" placeholder="Punctaj obținut">
+        <label>Alege concursul:</label>
+        <select id="concurs">
+            <option value="MIUB - Matematică">Matematică</option>
+            <option value="MIUB - Informatică">Informatică</option>
+        </select>
+        <button id="btnTrimite">Trimite Scorul</button>
+    </div>
+
+    <div style="width: 100%; max-width: 600px;">
+        <h2>📊 Clasament Live</h2>
+        <label>Filtrează după concurs:</label>
+        <select id="filtruConcurs">
+            <option value="Toate">Toate</option>
+            <option value="MIUB - Matematică">Matematică</option>
+            <option value="MIUB - Informatică">Informatică</option>
+        </select>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Loc</th>
+                    <th>Alias</th>
+                    <th>Scor</th>
+                    <th>Concurs</th>
+                </tr>
+            </thead>
+            <tbody id="tabelScoruri">
+                <!-- Datele vor apărea aici -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // --- AICI LIPESTE CONFIGURAREA TA DIN PASUL 1 (Pct 10) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyB0UQBBeBfMHxIQ9spIs7-LNI7UL9jLvMk",
+            authDomain: "clasament-mateinfoub.firebaseapp.com",
+            projectId: "clasament-mateinfoub",
+            storageBucket: "clasament-mateinfoub.firebasestorage.app",
+            messagingSenderId: "264707051723",
+            appId: "1:264707051723:web:af04def52b79c221d48b4e",
+            measurementId: "G-T6P7LK13JW"
+        };
+        // -------------------------------------------------------
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const colRef = collection(db, "scoruri");
+
+        // Funcția de trimitere date
+        document.getElementById('btnTrimite').onclick = async () => {
+            const alias = document.getElementById('alias').value;
+            const score = parseInt(document.getElementById('score').value);
+            const concurs = document.getElementById('concurs').value;
+
+            if(alias && !isNaN(score)) {
+                await addDoc(colRef, {
+                    alias: alias,
+                    score: score,
+                    concurs: concurs,
+                    data: new Date()
+                });
+                document.getElementById('alias').value = '';
+                document.getElementById('score').value = '';
+                alert("Scor înregistrat!");
+            } else {
+                alert("Te rugăm să completezi aliasul și scorul!");
+            }
+        };
+
+        // Funcția de afișare clasament (Live)
+        function updateLeaderboard() {
+            const filtru = document.getElementById('filtruConcurs').value;
+            let q = query(colRef, orderBy("score", "desc"));
+
+            if (filtru !== "Toate") {
+                q = query(colRef, where("concurs", "==", filtru), orderBy("score", "desc"));
+            }
+
+            onSnapshot(q, (snapshot) => {
+                let html = "";
+                let index = 1;
+                snapshot.forEach(doc => {
+                    const d = doc.data();
+                    const clasaAur = index === 1 ? 'class="gold"' : '';
+                    html += `<tr ${clasaAur}>
+                        <td>${index++}</td>
+                        <td>${d.alias}</td>
+                        <td>${d.score}</td>
+                        <td>${d.concurs}</td>
+                    </tr>`;
+                });
+                document.getElementById('tabelScoruri').innerHTML = html;
+            });
+        }
+
+        document.getElementById('filtruConcurs').onchange = updateLeaderboard;
+        updateLeaderboard(); // Incarcare initiala
+    </script>
+</body>
+</html>
