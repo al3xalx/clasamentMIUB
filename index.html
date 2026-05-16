@@ -9,6 +9,10 @@
         .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; margin-bottom: 20px; }
         h2 { margin-top: 0; color: #1a73e8; }
         input, select, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .radio-group { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+        .radio-option { flex: 1; display: flex; align-items: center; gap: 10px; background: #eef5ff; border: 1px solid #d1e3ff; border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: 0.2s; }
+        .radio-option:hover { background: #dce8ff; }
+        .radio-option input { width: auto; margin: 0; }
         button { background-color: #1a73e8; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
         button:hover { background-color: #1557b0; }
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -25,10 +29,10 @@
         <input type="text" id="alias" placeholder="Aliasul tău (ex: Bogdiii)">
         <input type="number" id="score" min="0" placeholder="Punctaj obținut">
         <label>Alege clasa:</label>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0;">
-            <label style="flex: 1; display: flex; align-items: center; gap: 6px;"><input type="radio" name="clasa" value="11">11</label>
-            <label style="flex: 1; display: flex; align-items: center; gap: 6px;"><input type="radio" name="clasa" value="12">12</label>
-            <label style="flex: 1; display: flex; align-items: center; gap: 6px;"><input type="radio" name="clasa" value="Șomer">Șomer</label>
+        <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="clasa" value="11"><span>11</span></label>
+            <label class="radio-option"><input type="radio" name="clasa" value="12"><span>12</span></label>
+            <label class="radio-option"><input type="radio" name="clasa" value="Șomer"><span>Șomer</span></label>
         </div>
         <label>Alege concursul:</label>
         <select id="concurs">
@@ -68,20 +72,6 @@
                         </tr>
                     </thead>
                     <tbody id="tabelInformatica"></tbody>
-                </table>
-            </div>
-            <div>
-                <h3>Baze de date</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Loc</th>
-                            <th>Alias</th>
-                            <th>Scor</th>
-                            <th>Clasa</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelBaze"></tbody>
                 </table>
             </div>
         </div>
@@ -167,7 +157,13 @@
                 alert("ce amuzant esti");
             }
 
-            await addDoc(colRef, {
+            const targetCollection = concurs === "MIUB - Informatică"
+                ? collection(db, "scoruri informatica")
+                : concurs === "MIUB - Matematică"
+                    ? collection(db, "scoruri matematica")
+                    : colRef;
+
+            await addDoc(targetCollection, {
                 alias: alias,
                 score: score,
                 concurs: concurs,
@@ -202,8 +198,6 @@
                         mathRows.push(row);
                     } else if (d.concurs === "MIUB - Informatică") {
                         infoRows.push(row);
-                    } else if (d.concurs === "MIUB - Baze de date") {
-                        bazeRows.push(row);
                     }
                 });
 
@@ -213,7 +207,6 @@
 
                 document.getElementById('tabelMatematica').innerHTML = numberRows(mathRows);
                 document.getElementById('tabelInformatica').innerHTML = numberRows(infoRows);
-                document.getElementById('tabelBaze').innerHTML = numberRows(bazeRows);
             });
         }
 
