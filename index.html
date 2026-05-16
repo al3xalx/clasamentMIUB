@@ -123,15 +123,21 @@
         concursSelect.onchange = updateScoreMax;
         updateScoreMax();
 
+        function getSelectedClasa() {
+            const selected = document.querySelector('input[name="clasa"]:checked');
+            return selected ? selected.value : null;
+        }
+
         // Funcția de trimitere date
         document.getElementById('btnTrimite').onclick = async () => {
-            const alias = document.getElementById('alias').value;
+            const alias = document.getElementById('alias').value.trim();
             const score = parseInt(scoreInput.value);
             const concurs = concursSelect.value;
-            const maxScore = concurs === "MIUB - Informatică" ? 58 : 58;
+            const clasa = getSelectedClasa();
+            const maxScore = 58;
 
-            if (!alias || isNaN(score)) {
-                alert("Te rugăm să completezi aliasul și scorul!");
+            if (!alias || isNaN(score) || !clasa) {
+                alert("Te rugăm să completezi aliasul, scorul și clasa!");
                 return;
             }
 
@@ -144,40 +150,52 @@
                 alias: alias,
                 score: score,
                 concurs: concurs,
+                clasa: clasa,
                 data: new Date()
             });
             document.getElementById('alias').value = '';
             scoreInput.value = '';
+            document.querySelectorAll('input[name="clasa"]').forEach(i => i.checked = false);
             alert("Scor înregistrat!");
         };
 
         // Funcția de afișare clasament (Live)
         function updateLeaderboard() {
-            const filtru = document.getElementById('filtruConcurs').value;
-            let q = query(colRef, orderBy("score", "desc"));
-
-            if (filtru !== "Toate") {
-                q = query(colRef, where("concurs", "==", filtru), orderBy("score", "desc"));
-            }
+            const q = query(colRef, orderBy("score", "desc"));
 
             onSnapshot(q, (snapshot) => {
-                let html = "";
-                let index = 1;
+                const mathRows = [];
+                const infoRows = [];
+                const bazeRows = [];
+
                 snapshot.forEach(doc => {
                     const d = doc.data();
-                    const clasaAur = index === 1 ? 'class="gold"' : '';
-                    html += `<tr ${clasaAur}>
-                        <td>${index++}</td>
+                    const row = `<tr>
+                        <td>0</td>
                         <td>${d.alias}</td>
                         <td>${d.score}</td>
-                        <td>${d.concurs}</td>
+                        <td>${d.clasa || '-'}</td>
                     </tr>`;
+
+                    if (d.concurs === "MIUB - Matematică") {
+                        mathRows.push(row);
+                    } else if (d.concurs === "MIUB - Informatică") {
+                        infoRows.push(row);
+                    } else if (d.concurs === "MIUB - Baze de date") {
+                        bazeRows.push(row);
+                    }
                 });
-                document.getElementById('tabelScoruri').innerHTML = html;
+
+                function numberRows(rows) {
+                    return rows.map((row, index) => row.replace('<td>0</td>', `<td>${index + 1}</td>`)).join('');
+                }
+
+                document.getElementById('tabelMatematica').innerHTML = numberRows(mathRows);
+                document.getElementById('tabelInformatica').innerHTML = numberRows(infoRows);
+                document.getElementById('tabelBaze').innerHTML = numberRows(bazeRows);
             });
         }
 
-        document.getElementById('filtruConcurs').onchange = updateLeaderboard;
         updateLeaderboard(); // Incarcare initiala
     </script>
 </body>
